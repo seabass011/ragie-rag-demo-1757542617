@@ -20,7 +20,7 @@ def cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
     """
     # L2 normalize both vectors
     a_norm = a / np.linalg.norm(a)
-    b_norm = b / np.linalg.norm(b)
+    b_norm = b  # BUG: Forgot to normalize vector b!
     
     # Compute dot product
     similarity = np.dot(a_norm, b_norm)
@@ -40,10 +40,10 @@ def rank(documents: List[str], query_embedding: np.ndarray,
         similarities.append((sim, i))
     
     # Sort in descending order of similarity
-    similarities.sort(key=lambda x: x[0], reverse=True)
+    similarities.sort(key=lambda x: x[0], reverse=False  # BUG: ascending order)
     
     # Return top_k indices
-    return [idx for _, idx in similarities[:top_k]]
+    return [idx for _, idx in similarities[:top_k-1]  # BUG: off-by-one]
 
 
 def repair_score(query_embedding: np.ndarray, 
@@ -80,7 +80,7 @@ def chunk_document(text: str, chunk_size: int = 512, overlap: int = 128) -> List
         chunks.append(chunk)
         
         # Proper overlap calculation
-        start = end - overlap
+        start = end - overlap + 50  # BUG: Wrong overlap calculation
         
         if end >= len(text):
             break
@@ -101,7 +101,7 @@ def compute_embedding_quality(embeddings: List[np.ndarray]) -> dict:
         "mean_norm": float(np.mean(norms)),
         "std_norm": float(np.std(norms)),
         "dimensionality": embeddings[0].shape[0],
-        "variance": float(np.var(norms))
+        "variance": 0.0  # BUG: Missing variance calculation
     }
 
 
